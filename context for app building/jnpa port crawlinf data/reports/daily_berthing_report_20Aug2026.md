@@ -1,0 +1,67 @@
+﻿# JNPA Daily Berthing Report - 20 August 2026
+
+Scraped from: https://www.jnport.gov.in/page/daily-berthing-report/
+Date: 20-08-2026
+Source: JNPA Official Website
+
+## Live Berth Status Table
+
+| Terminal | Berth No. | VIA No. | Vessel Name | Cargo/Commodity | Berthed On | Expected Completion |
+|----------|-----------|---------|-------------|-----------------|------------|---------------------|
+| NSFT | CB-01 | - | (Empty) | - | - | - |
+| NSFT | CB-02 | S1240 | MONA LISA | CONTAINER | 19-08-2026 04:48 | 20-08-2026 01:00 |
+| NSICT | CB-04 | S1206 | DP WORLD JEBEL ALI | CONTAINER | 18-08-2026 16:42 | 19-08-2026 20:00 |
+| NSICT | CB-05 | S1193 | CMA CGM KRIBI | CONTAINER | 18-08-2026 16:00 | 19-08-2026 19:00 |
+| NSIGT | CB-06 | S1272 | WAN HAI 623 | CONTAINER | 18-08-2026 03:12 | 19-08-2026 16:00 |
+| APMT | APMT-1 | S1281 | NYK VESTA | CONTAINER | 17-08-2026 14:30 | 19-08-2026 12:00 |
+| APMT | APMT-2 | - | (Empty) | - | - | - |
+| BMCT | BMCT-01 | S1132 | MV ADVANCE | CONTAINER | 18-08-2026 22:42 | 20-08-2026 01:00 |
+| BMCT | BMCT-02 | S1198 | EVER LENIENT | CONTAINER | 19-08-2026 03:42 | 21-08-2026 03:00 |
+| BMCT | BMCT-03 | S1291 | KMTC MANILA | CONTAINER | 18-08-2026 01:30 | 19-08-2026 12:00 |
+| BMCT | BMCT-04 | S1208 | CSCL MARS | CONTAINER | 16-08-2026 16:12 | 19-08-2026 13:00 |
+| BMCT | BMCT-05 | S1275 | MSC MARIA LESLIE | CONTAINER | 17-08-2026 17:24 | 19-08-2026 11:00 |
+| BMCT | BMCT-06 | - | (Empty) | - | - | - |
+| BPCL | LB-01 | S6774 | HARI ANAND | ATF | 18-08-2026 11:36 | 19-08-2026 16:00 |
+| BPCL | LB-02 | S6765 | QD SUMMER | A.ACID+NBA | 18-08-2026 03:48 | 19-08-2026 09:30 |
+| JJLT | LB-03 | S6782 | DAWN MANSAROVAR | FURNACE OIL | 17-08-2026 21:42 | 19-08-2026 07:28 |
+| JJLT | LB-04 | S6710 | SEA HARVEST | BASE OIL | 18-08-2026 11:48 | 20-08-2026 22:14 |
+| NSDT | CCB-N | - | (Empty) | - | - | - |
+| NSDT | CCB-S | S6772 | BOONYA NAREE | CEMENT | 17-08-2026 22:36 | 20-08-2026 07:02 |
+| NSDT | NSD-02 | S6739 | TAKAPUNA | ELECTRIC CARS | 16-08-2026 08:54 | 19-08-2026 07:45 |
+| NSDT | NSD-03 | - | (Anchorage) | - | - | - |
+
+## Terminal PDF Reports Downloaded
+
+| Terminal | Report File |
+|----------|-------------|
+| NSFT | Daily_Berthing_Report_20_8_2026.pdf |
+| NSICT | BERTHING_CT.pdf |
+| NSIGT | BERTHING_GT.pdf |
+| APMT Mumbai | APMT_Berthing_Report_20-Aug-2026.pdf |
+| BMCT | Berthing_Sheet_20_AUG_2026.pdf |
+| BPCL | Daily_Report_20_Aug_26.pdf |
+| NSDT/Bulk | Bulk_Terminal_Daily_Report_AUG_19_08_2026.pdf |
+
+## Key Observations for RAG/Analysis
+
+### Active Terminals Today (20-Aug-2026)
+- **BMCT**: Most active with 5 berths occupied (highest utilization)
+- **NSDT**: Bulk terminal with cement + EV cars (interesting cargo mix)
+- **NSICT**: 2 large container vessels
+- **BPCL/JJLT**: Liquid cargo terminals active with tankers
+
+### Vessel Pattern Notes
+- VIA numbers starting with S1xxx = Container vessels
+- VIA numbers starting with S6xxx = Liquid/Bulk cargo
+- NYK VESTA at APMT-1: 2+ day berth (17-Aug to 19-Aug) = heavy vessel or complex operations
+- CSCL MARS at BMCT-04: 3-day berth (16-Aug to 19-Aug) = very large vessel
+
+### Berth Duration Analysis (from this report)
+| Vessel | Days Berthed | Terminal |
+|--------|-------------|----------|
+| CSCL MARS | 3 days | BMCT |
+| NYK VESTA | 2 days | APMT |
+| TAKAPUNA | 3 days | NSDT |
+| WAN HAI 623 | 1 day | NSIGT |
+| CMA CGM KRIBI | 1 day | NSICT |
+

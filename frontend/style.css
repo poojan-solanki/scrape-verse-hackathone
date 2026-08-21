@@ -1,0 +1,72 @@
+/* ========================================================================= */
+/* PortPulse Custom Styles & WebGL Tooltip Overlay Enhancements */
+/* ========================================================================= */
+
+/* Custom Smooth Slim Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 242, 254, 0.6);
+}
+
+/* Globe.gl Custom Hover Tooltip Styling */
+.scene-tooltip {
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: auto !important;
+  z-index: 50 !important;
+}
+
+.port-tooltip-card {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.7), 0 0 25px -5px rgba(0, 242, 254, 0.25);
+  border-radius: 14px;
+  padding: 14px 16px;
+  min-width: 260px;
+  max-width: 320px;
+  font-family: 'Outfit', sans-serif;
+  color: #f1f5f9;
+  text-align: left;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+
+/* Pulse animation for active pins */
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 242, 254, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
+/* Glow Borders & Interactive Elements */
+.glow-on-hover:hover {
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
+  border-color: rgba(0, 242, 254, 0.6);
+}
