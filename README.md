@@ -129,34 +129,6 @@ When a port website updates its DOM or table layout:
 
 ---
 
-## 📦 Sample Normalized Output (JSON)
-
-Here is what our normalized pipeline produces from messy port websites:
-
-```json
-[
-  {
-    "vessel_name": "OOCL WISDOM",
-    "terminal_name": "Berths 8&9",
-    "berth_number": "Berths 8&9",
-    "via_number": null,
-    "commodity": "Containers (TEU)",
-    "berthed_at": "2026-08-19T19:19:00Z",
-    "expected_completion_at": "2026-08-23T19:45:00Z",
-    "terminal_report_pdf_url": "https://www.portoffelixstowe.co.uk/company-information/marine/",
-    "raw_payload": {
-      "nationality": "Hong Kong",
-      "gross_tonnage": "234,361",
-      "overall_length": "400m",
-      "last_port": "Singapore",
-      "next_port": "Zeebrugge",
-      "ships_agent": "OOCL"
-    }
-  }
-]
-```
-
----
 
 ## 🚀 Running Locally
 
