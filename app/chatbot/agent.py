@@ -78,8 +78,15 @@ def _create_agent_graph():
     return workflow.compile()
 
 
-# Compile graph singleton
-maritime_agent_graph = _create_agent_graph()
+_maritime_agent_graph = None
+
+
+def get_agent_graph():
+    """Lazily compiles and returns the official LangGraph StateGraph agent."""
+    global _maritime_agent_graph
+    if _maritime_agent_graph is None:
+        _maritime_agent_graph = _create_agent_graph()
+    return _maritime_agent_graph
 
 
 def _extract_telemetry_and_reply(messages: List[BaseMessage]) -> Tuple[str, List[Dict[str, Any]]]:
@@ -115,7 +122,7 @@ async def run_maritime_agent(
         fallback_reply = (
             "👋 **PortPulse AI Maritime Copilot**:\n\n"
             "I am connected to **Bright Data MCP** and **Supabase MCP**.\n"
-            "Please configure your `OPENAI_API_KEY` in `.env` to enable full autonomous tool execution."
+            "Please configure your `OPENAI_API_KEY` in environment variables to enable full autonomous tool execution."
         )
         updated_history = list(conversation_history) + [
             {"role": "user", "content": user_message},
@@ -140,7 +147,8 @@ async def run_maritime_agent(
     messages.append(HumanMessage(content=user_message))
 
     try:
-        final_state = await maritime_agent_graph.ainvoke({"messages": messages})
+        agent = get_agent_graph()
+        final_state = await agent.ainvoke({"messages": messages})
         reply, tools_called = _extract_telemetry_and_reply(final_state["messages"])
 
         updated_history = list(conversation_history) + [

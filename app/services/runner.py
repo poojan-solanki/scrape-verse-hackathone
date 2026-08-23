@@ -17,7 +17,13 @@ class ScraperRunner:
     """Orchestrates scraper execution, validation, autonomous self-healing, and DB persistence."""
 
     def __init__(self):
-        self.supabase = get_supabase_client()
+        self._supabase = None
+
+    @property
+    def supabase(self):
+        if self._supabase is None:
+            self._supabase = get_supabase_client()
+        return self._supabase
 
     def run_port(self, port_id: str) -> Dict[str, Any]:
         """Triggers the Bright Data scraper CLI, validates data, and auto-heals if broken."""

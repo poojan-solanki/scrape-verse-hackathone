@@ -34,8 +34,14 @@ class FelixstoweScraperIntegration:
 
     def __init__(self):
         self.port_scraper = FelixstoweScraper()
-        self.supabase = get_supabase_client()
+        self._supabase = None
         self.brightdata_api_key = os.getenv("BRIGHTDATA_API_TOKEN") or os.getenv("BRIGHT_DATA_API_KEY")
+
+    @property
+    def supabase(self):
+        if self._supabase is None:
+            self._supabase = get_supabase_client()
+        return self._supabase
 
     async def run(self) -> Dict[str, Any]:
         """Executes full live scraping, parsing, validation, and storage pipeline."""
