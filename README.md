@@ -49,19 +49,18 @@
 
 ---
 
-## 💡 The Problem & Why We Built This
+## 💡 The Problem & Solution
 
-Ever tried tracking commercial cargo ships across different global ports? It is honestly chaotic.
+### The Problem
+- **Fragmented Port Data**: Every major port publishes schedules differently — dynamic SPAs, raw HTML tables, or daily PDF bulletins.
+- **Fragile Scrapers**: Web scrapers break whenever a port changes its website layout or CSS classes.
+- **No Unified View**: Logistics teams lack a single dashboard to track live ship queues, dwell times, and port congestion.
 
-Global trade relies completely on maritime shipping, but every major port formats their data differently. Some use single-page web applications with protected APIs, others publish raw HTML tables, and some literally dump daily berthing manifests into PDFs on obscure government portals. 
-
-To make matters worse, as soon as a port updates their website layout or CSS classes, traditional web scrapers break instantly without anyone noticing.
-
-We built **PortPulse** to fix this entire pipeline:
-1. **Scrape live port telemetry reliably** using custom **Bright Data Scraper Studio Collectors**.
-2. **Auto-heal broken scrapers** using a **LangGraph agentic state machine** that diagnoses DOM shifts and rewrites extraction prompts without human intervention.
-3. **Parse unstructured PDF gate manifests** using multimodal vision & OCR pipelines.
-4. **Display everything in an interactive 3D Command Center** with live vessel logs, AI situation reports, and an AI maritime copilot.
+### The Solution
+1. **Automated Scraping**: Collects live vessel manifests using **Bright Data Scraper Studio**.
+2. **Autonomous Self-Healing**: A **LangGraph** agent detects broken extractions, updates scraper prompts, and retests automatically.
+3. **PDF Manifest Ingestion**: Parses daily port PDF reports into clean structured data.
+4. **Unified 3D Dashboard**: Displays real-time vessel schedules, AI congestion summaries, and an AI chat assistant.
 
 ---
 
