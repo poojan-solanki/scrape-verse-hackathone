@@ -105,15 +105,15 @@ flowchart TD
 
 ---
 
-## 🛰️ Active Bright Data Scraper Studio Collectors
+## 🛰️ Scraper Collectors
 
-We built and verified custom scrapers in **Bright Data Scraper Studio** to extract live shipping manifests:
+Bright Data Scraper Studio collectors extracting live manifests:
 
-| Port Name | UN/LOCODE | Region | Bright Data Collector ID | Target Portal |
-|---|---|---|---|---|
-| **JNPA (Nhava Sheva)** | `INNSA` | India (Maharashtra) | `c_mszumjcx12i1k1ydb8` | JNPA Live Berthing Portal |
-| **Mundra Port** | `INMUN` | India (Gujarat) | `c_mt03ofjt15cu3ojzx6` | APSEZ Schedule Hub |
-| **Port of Felixstowe** | `GBFXT` | United Kingdom (Suffolk) | `c_mt60nosg1yqb8hzqks` | Ocean Live Shipping Marine Portal |
+| Port | UN/LOCODE | Collector ID | Target Source |
+|---|---|---|---|
+| **JNPA (Nhava Sheva)** | `INNSA` | `c_mszumjcx12i1k1ydb8` | JNPA Live Berthing Portal |
+| **Mundra Port** | `INMUN` | `c_mt03ofjt15cu3ojzx6` | APSEZ Schedule Hub |
+| **Port of Felixstowe** | `GBFXT` | `c_mt60nosg1yqb8hzqks` | Ocean Marine Portal |
 
 ---
 
