@@ -25,29 +25,27 @@
 
 ---
 
-## 🖥️ What’s Happening in the Dashboard & How It Works
+## 🖥️ What the Dashboard Shows
 
-We built PortPulse to look and feel like a modern aerospace and maritime mission control center. Here is a breakdown of what you see on the dashboard and how each piece is implemented behind the scenes:
+### 1. 🌍 Interactive 3D Globe
+- **What it shows**: A 3D interactive globe with clickable pins on major ports (JNPA Mumbai, Mundra Port, Port of Felixstowe UK). Clicking a pin rotates the globe and loads live port data.
+- **How it's built**: Built using **Three.js** and **Globe.gl** in React. Selecting a port queries FastAPI to fetch cached records from Supabase.
 
-### 1. 🌍 Interactive 3D Globe & Port Beacon System
-- **What you see**: A glowing 3D Earth rendered in dark mode with pulsing beacons over key global ports (JNPA Mumbai, Mundra Port, Port of Felixstowe UK). Clicking any port smoothly rotates the camera and loads its real-time telemetry.
-- **How we built it**: We combined **Three.js** and **Globe.gl** inside React. When a user clicks a beacon, a reactive state change triggers high-speed async REST calls to fetch the latest berth manifests and updates the camera position with smooth interpolation.
+### 2. 🚢 Live Ship Schedules & Berth Tracking
+- **What it shows**: Real-time list of ships docked at berths, waiting in anchorage, or scheduled to arrive. Displays berth numbers, arrival times, ship dimensions (LOA), gross tonnage, cargo types, and shipping agents.
+- **How it's built**: **Bright Data Scraper Studio** collectors scrape port portals on cron schedules. Data is validated with **Pydantic**, assigned a quality score (0–100%), and stored in **Supabase**.
 
-### 2. 🚢 Live Ship Data & Vessel Manifests
-- **What you see**: A searchable, filterable grid displaying every cargo ship currently docked at a berth, waiting out at anchorage, or scheduled to arrive. You can see exact berth numbers, arrival/departure timestamps, Length Overall (LOA), Gross Tonnage, cargo types (TEU containers, chemicals, dry bulk), and shipping agents.
-- **How we built it**: Our **Bright Data Scraper Studio Collectors** crawl live seaport marine portals on recurring cron intervals. We validate every single scraped record through strict **Pydantic contracts** (`StrictVesselRecord`), calculate a live **Health Score (0–100%)**, and save clean normalized records into **Supabase PostgreSQL**. The frontend streams this via FastAPI with instant client-side search.
+### 3. 📊 AI Port Summaries
+- **What it shows**: A quick summary for each port highlighting congestion levels, wait times, berth occupancy, and delays.
+- **How it's built**: When new scraper data is saved, an LLM summarizer processes the vessel list and creates a short operational brief in the database.
 
-### 3. 📊 AI Situation Reports (Executive Port Briefings)
-- **What you see**: At the top of every port view, there is an instant intelligence summary explaining terminal congestion levels, average ship turnaround times, berth occupancy percentage, and any operational bottlenecks.
-- **How we built it**: Whenever fresh scraper data enters the system, an AI summarization pipeline analyzes the entire vessel manifest. It aggregates metrics (e.g. ratio of berthed vs waiting ships, dwell times) and generates a structured, easy-to-read situational brief stored directly in the database.
+### 4. 💬 PortPulse AI Copilot (Chatbot)
+- **What it shows**: A sidebar assistant that answers questions about port traffic, docked vessels, queues, or maritime weather alerts.
+- **How it's built**: Built with **LangGraph**. It autonomously queries **Supabase** for local ship data or searches the web via **Bright Data Web Unlocker / SERP API**.
 
-### 4. 💬 PortPulse AI Maritime Copilot (Chatbot)
-- **What you see**: A built-in conversational assistant in the sidebar. You can ask anything from *"Which container ships are berthed at Felixstowe Berths 8&9?"* to *"What is the anchorage queue in Mundra right now?"* or *"Search the web for weather alerts at Mumbai port."*
-- **How we built it**: Powered by **LangGraph** and Model Context Protocol (MCP) tool bindings. The agent dynamically decides whether to query our **Supabase database** for cached ship telemetry, extract text from terminal PDF gate bulletins, or invoke **Bright Data Web Unlocker / SERP search** for live carrier advisories.
-
-### 5. 📑 Multimodal Terminal PDF OCR Agent
-- **What you see**: Dedicated terminal reports with deep operational metrics (like crane moves and alongside draft depths) extracted straight from daily port authority PDF bulletins.
-- **How we built it**: An automated PDF processing pipeline downloads daily gate bulletins from port marine portals, parses messy tables using PyPDF and OCR vision fallback, structures the text into clean JSON, and registers it to the vessel database.
+### 5. 📑 Terminal PDF Report Parser
+- **What it shows**: Terminal data (draft depths, alongside dates, TEU balance) extracted from daily port authority PDF bulletins.
+- **How it's built**: Downloads PDF bulletins from port websites, parses tables with PyPDF and OCR fallback, and saves structured JSON into the database.
 
 ---
 
