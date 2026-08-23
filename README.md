@@ -202,8 +202,8 @@ The frontend provides an operations-grade command center:
 ### 1. Backend Setup
 ```bash
 # Clone the repository
-git clone https://github.com/poojan-solanki/scrape-verse-hackathone.git
-cd scrape-verse-hackathone
+git clone https://github.com/poojan-solanki/PortPulse.git
+cd PortPulse
 
 # Install Python dependencies
 uv sync # or pip install -r requirements.txt
