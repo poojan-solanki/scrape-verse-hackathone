@@ -6,6 +6,8 @@ supabase = get_supabase_client()
 
 
 @router.get("/port-list")
+@router.get("/api/ports")
+@router.get("/ports")
 def get_port_list():
     """Fetch all ports and their metadata/health status from Supabase."""
     res = supabase.table("ports").select("*, scrapers(*)").order("name").execute()

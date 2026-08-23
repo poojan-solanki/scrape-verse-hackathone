@@ -4,12 +4,19 @@ from dateutil import parser as date_parser
 from pydantic import BaseModel, Field
 
 
+from datetime import timezone
+
 def parse_date_to_iso(date_str: Optional[str]) -> Optional[str]:
     """Robust ISO-8601 date parsing leveraging python-dateutil with day-first support."""
     if not date_str or str(date_str).strip() in ("", "null", "None", "-"):
         return None
     try:
-        return date_parser.parse(str(date_str).strip(), dayfirst=True).isoformat() + "Z"
+        dt = date_parser.parse(str(date_str).strip(), dayfirst=True)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
+        return dt.isoformat().replace("+00:00", "Z")
     except (ValueError, TypeError):
         return None
 

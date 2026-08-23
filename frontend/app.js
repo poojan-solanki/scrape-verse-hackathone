@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadPortList();
   loadHealingEvents();
   setupEventListeners();
+  setupChatbot();
   if (window.lucide) window.lucide.createIcons();
 });
 
@@ -42,7 +43,7 @@ function initGlobe() {
     .atmosphereColor("#00f2fe")
     .atmosphereAltitude(0.20)
     .showAtmosphere(true)
-    
+
     // Crisp 2D Circular Dots / Points on Earth Surface (NO 3D cylinders)
     .pointLat(d => parseFloat(d.latitude))
     .pointLng(d => parseFloat(d.longitude))
@@ -50,7 +51,7 @@ function initGlobe() {
     .pointAltitude(0.01)       // Flat point on earth surface
     .pointRadius(0.35)         // Small crisp circular point marker
     .pointResolution(32)
-    
+
     // Pulsing Radar Rings on the water surface at each port location
     .ringLat(d => parseFloat(d.latitude))
     .ringLng(d => parseFloat(d.longitude))
@@ -58,10 +59,10 @@ function initGlobe() {
     .ringMaxRadius(2.2)
     .ringPropagationSpeed(1.2)
     .ringRepeatPeriod(900)
-    
+
     // Custom Rich Hover Popup on Port Coordinates
     .pointLabel(d => createPortTooltipHtml(d))
-    
+
     // On Click: Smooth Zoom Camera & Open Slide-Over Side Panel
     .onPointClick(port => {
       openPortSidePanel(port);
@@ -73,7 +74,7 @@ function initGlobe() {
   // Smooth gentle auto-rotation
   globeWorld.controls().autoRotate = true;
   globeWorld.controls().autoRotateSpeed = 0.35;
-  
+
   // Resize handler
   window.addEventListener("resize", () => {
     if (globeWorld) {
@@ -255,6 +256,9 @@ async function openPortSidePanel(port) {
 
   // 6. Fetch vessel data from backend API
   await fetchPortVessels(currentPortSlug);
+
+  // 7. Fetch AI Port Intelligence Summary
+  await fetchPortSummary(currentPortSlug);
 }
 
 function closePortSidePanel() {
@@ -302,7 +306,7 @@ async function fetchPortVessels(slug) {
     updateTabCounts();
 
     const lastScrapedStr = currentPortData.last_scraped_at || currentPortData.scraped_at;
-    const scrapedAtText = lastScrapedStr 
+    const scrapedAtText = lastScrapedStr
       ? `Last Scraped: ${new Date(lastScrapedStr).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`
       : "Synced from Port Authority Live Berthing Telemetry";
     document.getElementById("panelLastScrapedAt").innerText = scrapedAtText;
@@ -311,6 +315,55 @@ async function fetchPortVessels(slug) {
     console.warn(`No live vessel endpoint found for ${slug}:`, err);
     currentPortData = { port: currentPort.name, vessels: [], total_vessels: 0 };
     renderEmptyPortState();
+  }
+}
+
+// Fetch AI Port Intelligence Summary
+async function fetchPortSummary(slug) {
+  const banner = document.getElementById("portSummaryBanner");
+  const summaryText = document.getElementById("summaryText");
+  const summaryTs = document.getElementById("summaryTimestamp");
+  if (!banner || !summaryText) return;
+
+  try {
+    const res = await fetch(`/port/${slug}/summary`);
+    if (!res.ok) {
+      banner.classList.add("hidden");
+      return;
+    }
+    const data = await res.json();
+    if (data.summary && data.summary.summary_text) {
+      summaryText.innerHTML = formatMarkdown(data.summary.summary_text);
+      if (data.summary.generated_at) {
+        summaryTs.innerText = new Date(data.summary.generated_at).toLocaleString("en-US", {
+          month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+        });
+      }
+      banner.classList.remove("hidden");
+    } else {
+      banner.classList.add("hidden");
+    }
+  } catch (e) {
+    console.warn("AI summary fetch error:", e);
+    banner.classList.add("hidden");
+  }
+}
+
+let currentPdfData = [];
+
+// Fetch deep OCR records from terminal berthing PDFs
+async function fetchPdfIntelligence(slug) {
+  try {
+    const res = await fetch(`/port/${slug}/pdf-intelligence`);
+    if (!res.ok) {
+      currentPdfData = [];
+      return;
+    }
+    const data = await res.json();
+    currentPdfData = data.records || [];
+  } catch (e) {
+    console.warn("PDF OCR fetch error:", e);
+    currentPdfData = [];
   }
 }
 
@@ -331,13 +384,108 @@ function renderEmptyPortState() {
   if (window.lucide) window.lucide.createIcons();
 }
 
-// Render dynamic vessels table with Option B (Clickable PDF Links)
-function renderVesselsTable() {
+// Render dynamic vessels table with Option B (Clickable PDF Links) + PDF OCR Mode
+async function renderVesselsTable() {
   const tbody = document.getElementById("vesselsTableBody");
+  const thead = document.getElementById("vesselsTableHead");
   if (!tbody || !currentPortData) return;
 
-  let vessels = currentPortData.vessels || [];
   const query = (document.getElementById("vesselSearchInput").value || "").toLowerCase().trim();
+
+  // === SPECIAL TAB: DEEP PDF OCR MANIFEST ===
+  if (currentTab === "pdf_ocr") {
+    if (thead) {
+      thead.innerHTML = `
+        <tr>
+          <th class="py-2.5 px-3">Vessel Name</th>
+          <th class="py-2.5 px-3">LOA (Length)</th>
+          <th class="py-2.5 px-3">Berth / Side</th>
+          <th class="py-2.5 px-3">Terminal</th>
+          <th class="py-2.5 px-3">Ops Window</th>
+          <th class="py-2.5 px-3">Container Bal (Imp / Exp)</th>
+          <th class="py-2.5 px-3">Draft</th>
+        </tr>
+      `;
+    }
+
+    if (!currentPdfData || currentPdfData.length === 0) {
+      await fetchPdfIntelligence(currentPortSlug);
+    }
+
+    let pdfRecs = currentPdfData || [];
+    if (query) {
+      pdfRecs = pdfRecs.filter(r =>
+        (r.vessel_name || "").toLowerCase().includes(query) ||
+        (r.terminal_name || "").toLowerCase().includes(query) ||
+        (r.berth_number || "").toLowerCase().includes(query)
+      );
+    }
+
+    if (pdfRecs.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="py-10 text-center text-slate-400">
+            <div class="flex flex-col items-center gap-2">
+              <i data-lucide="file-text" class="w-6 h-6 text-purple-400"></i>
+              <p class="text-xs font-semibold text-slate-200">No PDF OCR Manifests Processed Yet</p>
+              <p class="text-[11px] text-slate-500 max-w-sm">Click "Sync Telemetry" to run the 2-stage OCR extraction pipeline on official terminal PDFs.</p>
+            </div>
+          </td>
+        </tr>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    tbody.innerHTML = pdfRecs.map(r => {
+      const loaBadge = r.loa ? `<span class="px-1.5 py-0.5 rounded font-mono text-[10px] bg-slate-800 text-cyan-300 border border-slate-700">${r.loa}m</span>` : '<span class="text-slate-500">—</span>';
+      const draftBadge = r.max_draft ? `<span class="px-1.5 py-0.5 rounded font-mono text-[10px] bg-slate-800 text-amber-300 border border-slate-700">${r.max_draft}m</span>` : '<span class="text-slate-500">—</span>';
+      const sideText = r.berthing_side ? ` (${r.berthing_side})` : '';
+      const impExpText = (r.imp_bal !== null || r.exp_bal !== null)
+        ? `<div class="font-mono text-[11px]"><span class="text-emerald-400">⬇ ${r.imp_bal || 0}</span> / <span class="text-blue-400">⬆ ${r.exp_bal || 0}</span> TEU</div>`
+        : '<span class="text-slate-500">—</span>';
+
+      return `
+        <tr class="hover:bg-purple-950/20 transition-colors">
+          <td class="py-2.5 px-3">
+            <div class="font-bold text-white flex items-center gap-1.5">
+              <span class="text-purple-400">📑</span>
+              <span>${r.vessel_name}</span>
+            </div>
+            ${r.via_number ? `<div class="text-[10px] text-slate-500 font-mono">VIA: ${r.via_number}</div>` : ''}
+          </td>
+          <td class="py-2.5 px-3">${loaBadge}</td>
+          <td class="py-2.5 px-3 font-mono text-cyan-400 font-bold">${r.berth_number || 'N/A'}${sideText}</td>
+          <td class="py-2.5 px-3 text-slate-300 font-medium">${r.terminal_name || 'Terminal'}</td>
+          <td class="py-2.5 px-3 text-[10px] font-mono text-slate-400">
+            <div>Start: ${r.ops_commenced || '—'}</div>
+            <div>End: ${r.ops_completed || '—'}</div>
+          </td>
+          <td class="py-2.5 px-3">${impExpText}</td>
+          <td class="py-2.5 px-3">${draftBadge}</td>
+        </tr>
+      `;
+    }).join("");
+
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  // === STANDARD TELEMETRY TABLE ===
+  if (thead) {
+    thead.innerHTML = `
+      <tr>
+        <th class="py-2.5 px-3">Vessel Name</th>
+        <th class="py-2.5 px-3">Berth / Jetty</th>
+        <th class="py-2.5 px-3">Terminal & Official PDF</th>
+        <th class="py-2.5 px-3">Cargo Type</th>
+        <th class="py-2.5 px-3">Est. Completion (ETC)</th>
+        <th class="py-2.5 px-3">Status</th>
+      </tr>
+    `;
+  }
+
+  let vessels = currentPortData.vessels || [];
 
   // Apply tab filter
   if (currentTab === "berth") {
@@ -350,7 +498,7 @@ function renderVesselsTable() {
 
   // Apply search filter
   if (query) {
-    vessels = vessels.filter(v => 
+    vessels = vessels.filter(v =>
       (v.vessel_name || "").toLowerCase().includes(query) ||
       (v.commodity || "").toLowerCase().includes(query) ||
       (v.berth_number || "").toLowerCase().includes(query) ||
@@ -372,7 +520,7 @@ function renderVesselsTable() {
   tbody.innerHTML = vessels.map(v => {
     const isAnchorage = (v.berth_number || "").toUpperCase() === "ANCHORAGE";
     const isExpected = (v.berth_number || "").toUpperCase() === "EXPECTED";
-    
+
     let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">BERTH ACTIVE</span>`;
     if (isAnchorage) {
       statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">ANCHORAGE WAITING</span>`;
@@ -380,7 +528,7 @@ function renderVesselsTable() {
       statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">EXPECTED INBOUND</span>`;
     }
 
-    const etcFormatted = v.expected_completion_at 
+    const etcFormatted = v.expected_completion_at
       ? new Date(v.expected_completion_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
       : "—";
 
@@ -458,7 +606,7 @@ function exportCsv() {
   if (!currentPortData || !currentPortData.vessels) return;
   const vessels = currentPortData.vessels;
   const headers = ["vessel_name", "berth_number", "terminal_name", "commodity", "expected_completion_at", "berthed_at", "terminal_report_pdf_url"];
-  
+
   let csvContent = headers.join(",") + "\n";
   vessels.forEach(v => {
     const row = headers.map(h => `"${(v[h] || "").toString().replace(/"/g, '""')}"`);
@@ -534,7 +682,7 @@ function setupEventListeners() {
       });
       btn.classList.add("active", "bg-cyan-500", "text-slate-950", "font-bold");
       btn.classList.remove("bg-slate-800", "text-slate-300", "font-medium");
-      
+
       currentTab = btn.getAttribute("data-tab");
       renderVesselsTable();
     });
@@ -580,4 +728,183 @@ function setupEventListeners() {
   telemetryModal.addEventListener("click", (e) => {
     if (e.target === telemetryModal) telemetryModal.classList.add("hidden");
   });
+}
+
+// =========================================
+// 9. ADAPTIVE MARITIME AI CHATBOT (COPILOT)
+// =========================================
+let chatHistory = [];
+
+function setupChatbot() {
+  const btnOpen = document.getElementById("btnOpenChat");
+  const btnClose = document.getElementById("btnCloseChat");
+  const chatPanel = document.getElementById("chatPanel");
+  const btnSend = document.getElementById("btnSendChat");
+  const chatInput = document.getElementById("chatInput");
+
+  if (!btnOpen || !chatPanel) return;
+
+  btnOpen.addEventListener("click", () => {
+    chatPanel.classList.toggle("hidden");
+    if (!chatPanel.classList.contains("hidden") && chatHistory.length === 0) {
+      appendBotMessage(
+        "👋 **Welcome to PortPulse Maritime AI Copilot!**\n\n" +
+        "I am connected directly to live Indian port telemetry (JNPT & Mundra) and deep terminal PDF OCR manifests.\n\n" +
+        "How can I assist your operations today? You can ask about:\n" +
+        "• Specific vessel berthing locations & expected completion\n" +
+        "• Anchorage waiting queues & congestion\n" +
+        "• Terminal container TEU balances & draft depths\n" +
+        "• Operational situation summaries"
+      );
+    }
+  });
+
+  if (btnClose) {
+    btnClose.addEventListener("click", () => chatPanel.classList.add("hidden"));
+  }
+
+  if (btnSend && chatInput) {
+    btnSend.addEventListener("click", sendChatMessage);
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+  }
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById("chatInput");
+  if (!input) return;
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = "";
+  appendUserMessage(msg);
+  appendTypingIndicator();
+
+  try {
+    const res = await fetch("/chat/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: msg,
+        history: chatHistory.map(h => ({ role: h.role, content: h.content })),
+      }),
+    });
+
+    removeTypingIndicator();
+
+    if (!res.ok) {
+      appendBotMessage("⚠️ Maritime agent connection issue. Please try again.");
+      return;
+    }
+
+    const data = await res.json();
+    chatHistory = data.history || [];
+    appendBotMessage(data.reply);
+  } catch (err) {
+    removeTypingIndicator();
+    console.error("Chat error:", err);
+    appendBotMessage("⚠️ Network error communicating with PortPulse Copilot.");
+  }
+}
+
+window.sendQuickPrompt = function (promptText) {
+  const input = document.getElementById("chatInput");
+  if (input) {
+    input.value = promptText;
+    sendChatMessage();
+  }
+};
+
+function appendUserMessage(text) {
+  const container = document.getElementById("chatMessages");
+  if (!container) return;
+
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "flex justify-end";
+  msgDiv.innerHTML = `
+    <div class="bg-cyan-500/20 border border-cyan-500/40 text-cyan-100 rounded-2xl rounded-tr-sm px-3.5 py-2 max-w-[85%] font-sans text-xs shadow-md">
+      ${escapeHtml(text)}
+    </div>
+  `;
+  container.appendChild(msgDiv);
+  scrollChatToBottom();
+}
+
+function appendBotMessage(markdownText) {
+  const container = document.getElementById("chatMessages");
+  if (!container) return;
+
+  const formattedHtml = formatMarkdown(markdownText);
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "flex items-start gap-2 justify-start";
+  msgDiv.innerHTML = `
+    <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-purple-500 to-cyan-500 flex items-center justify-center text-white text-[10px] shrink-0 mt-0.5 shadow-sm">
+      <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+    </div>
+    <div class="bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-2xl rounded-tl-sm px-3.5 py-2.5 max-w-[85%] font-sans text-xs leading-relaxed shadow-md">
+      ${formattedHtml}
+    </div>
+  `;
+  container.appendChild(msgDiv);
+  if (window.lucide) window.lucide.createIcons();
+  scrollChatToBottom();
+}
+
+function appendTypingIndicator() {
+  const container = document.getElementById("chatMessages");
+  if (!container) return;
+
+  const ind = document.createElement("div");
+  ind.id = "chatTypingIndicator";
+  ind.className = "flex items-center gap-2 text-slate-400 text-[11px] font-mono pl-8";
+  ind.innerHTML = `
+    <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin text-cyan-400"></i>
+    <span>PortPulse AI analyzing port database...</span>
+  `;
+  container.appendChild(ind);
+  if (window.lucide) window.lucide.createIcons();
+  scrollChatToBottom();
+}
+
+function removeTypingIndicator() {
+  const ind = document.getElementById("chatTypingIndicator");
+  if (ind) ind.remove();
+}
+
+function scrollChatToBottom() {
+  const container = document.getElementById("chatMessages");
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+// Utility: Lightweight Markdown Formatter
+function formatMarkdown(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>');
+  // Code
+  html = html.replace(/`(.*?)`/g, '<code class="bg-slate-950 px-1 py-0.5 rounded text-cyan-300 font-mono text-[10px]">$1</code>');
+  // Bullet points
+  html = html.replace(/^\s*[•\-]\s+(.*)$/gm, '<li class="ml-3 list-disc">$1</li>');
+  // Line breaks
+  html = html.replace(/\n\n/g, '<div class="h-2"></div>');
+  html = html.replace(/\n/g, '<br>');
+
+  return html;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.innerText = text;
+  return div.innerHTML;
 }

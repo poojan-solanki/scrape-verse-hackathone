@@ -9,3 +9,11 @@ context for app building
 tests
 conversation_understanding.md
 implementation_plan.md
+scripts
+self-healing-obsidian
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.tsbuildinfo
+.env

@@ -1,6 +1,7 @@
 import json
 import logging
 import subprocess
+import threading
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 from app.db.client import get_supabase_client
@@ -119,12 +120,62 @@ class ScraperRunner:
             "created_at": batch_timestamp,
         }).execute()
 
+        # 7 & 8. Launch PDF OCR + AI Summary in background daemon thread
+        # (These can take 30-90s; we must not block the HTTP response)
+        vessel_dicts = [r.model_dump() for r in report.valid_records]
+
+        def _background_intelligence(port_id_: str, scraper_id_: str, port_db_id_: str,
+                                     port_name_: str, vessels_: list) -> None:
+            """Runs PDF OCR extraction and AI summary generation in background thread."""
+            pdf_extracted_records = []
+            try:
+                from app.ocr.pdf_agent import run_pdf_ocr_agent
+                pdf_res = run_pdf_ocr_agent(
+                    port_id=port_id_,
+                    scraper_id=scraper_id_,
+                    port_db_id=port_db_id_,
+                )
+                pdf_extracted_records = pdf_res.get("extracted_records", [])
+            except Exception as pdf_err:
+                logger.warning(f"⚠️ [Runner/BG] PDF OCR failed: {pdf_err}")
+
+            try:
+                from app.intelligence.summarizer import generate_port_summary
+                summary = generate_port_summary(
+                    port_name=port_name_,
+                    vessels=vessels_,
+                    pdf_records=pdf_extracted_records,
+                )
+                # Use fresh Supabase client in background thread
+                bg_supabase = get_supabase_client()
+                bg_supabase.table("port_summaries").insert({
+                    "port_id": port_db_id_,
+                    "scraper_id": scraper_id_,
+                    "summary_text": summary["summary_text"],
+                    "vessel_count": summary["vessel_count"],
+                    "pdf_record_count": summary["pdf_record_count"],
+                    "generated_at": summary["generated_at"],
+                }).execute()
+                logger.info(f"📋 [Runner/BG] AI summary persisted for {port_name_}")
+            except Exception as sum_err:
+                logger.warning(f"⚠️ [Runner/BG] AI summary failed: {sum_err}")
+
+        bg_thread = threading.Thread(
+            target=_background_intelligence,
+            args=(port_id, db_scraper_id, db_port_id, metadata.name, vessel_dicts),
+            daemon=True,
+            name=f"intelligence-{port_id}",
+        )
+        bg_thread.start()
+        logger.info(f"🧵 [Runner] Intelligence pipeline started in background thread (PDF OCR + AI Summary)")
+
         return {
             "port_name": metadata.name,
             "records_extracted": len(report.valid_records),
             "health_score": report.health_score,
             "health_status": "healthy",
             "sample_vessels": [r.vessel_name for r in report.valid_records[:5]],
+            "ai_summary": "Generating in background...",
         }
 
     # Backward-compatible alias

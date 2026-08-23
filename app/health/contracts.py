@@ -47,7 +47,13 @@ class StrictVesselRecord(BaseModel):
         if not v or str(v).strip() in ("", "null", "None", "-"):
             return None
         try:
-            return date_parser.parse(str(v).strip(), dayfirst=True).isoformat() + "Z"
+            from datetime import timezone
+            dt = date_parser.parse(str(v).strip(), dayfirst=True)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            else:
+                dt = dt.astimezone(timezone.utc)
+            return dt.isoformat().replace("+00:00", "Z")
         except (ValueError, TypeError):
             return None
 

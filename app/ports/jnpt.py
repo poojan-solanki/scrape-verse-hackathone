@@ -3,14 +3,14 @@ from app.ports.base import BasePortScraper, PortMetadata, VesselRecord, parse_da
 
 
 class JNPTScraper(BasePortScraper):
-    """Port 1: JNPT (Jawaharlal Nehru Port Authority / Nhava Sheva) Scraper Module."""
+    """Port 1: JNPA (Jawaharlal Nehru Port Authority / Nhava Sheva) Scraper Module."""
 
     @property
     def metadata(self) -> PortMetadata:
         return PortMetadata(
-            port_id="in_jnpt",
-            name="JNPT (Nhava Sheva)",
-            full_name="Jawaharlal Nehru Port Authority",
+            port_id="in_jnpa",
+            name="JNPA (Nhava Sheva)",
+            full_name="Jawaharlal Nehru Port Authority (JNPA)",
             unlocode="INNSA",
             collector_id="c_mszumjcx12i1k1ydb8",
             country="India",
