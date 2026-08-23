@@ -136,7 +136,7 @@ When a port website updates its DOM or table layout:
 - **Offloaded Scraping**: Scrapers run on Bright Data's cloud collectors, so running 5 or 50 ports puts zero proxy or CPU overhead on the server.
 - **Dynamic API Routing**: REST endpoints (`/api/port/<id>/vessels`, `/api/port/<id>/summary`) are generated at runtime for every registered port.
 
-### How to Add a New Port (In Reality)
+### How to Add a New Port
 Adding a new port requires 3 steps without touching the core engine, database tables, or frontend:
 
 1. **Create Collector**: In Bright Data Scraper Studio, generate a collector for the port's shipping schedule URL.
