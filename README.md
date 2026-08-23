@@ -47,6 +47,9 @@
 - **What it shows**: Terminal data (draft depths, alongside dates, TEU balance) extracted from daily port authority PDF bulletins.
 - **How it's built**: Downloads PDF bulletins from port websites, parses tables with PyPDF and OCR fallback, and saves structured JSON into the database.
 
+### 6. 🔄 Live Telemetry Sync Button
+- **What it does**: The "Sync Telemetry" button triggers an on-demand live Bright Data scraper run and PDF OCR pipeline, refreshing vessel logs and AI situation reports in real time.
+
 ---
 
 ## 💡 The Problem & Solution
