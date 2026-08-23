@@ -6,15 +6,13 @@ from supabase import create_client, Client
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
-
-
 def get_supabase_client() -> Client:
     """Returns an authenticated Supabase client."""
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in .env")
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+    url = os.getenv("SUPABASE_URL", "")
+    key = os.getenv("SUPABASE_KEY", "")
+    if not url or not key:
+        raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
+    return create_client(url, key)
 
 
 def get_latest_vessel_logs(unlocode: str) -> Dict[str, Any]:

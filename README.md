@@ -1,8 +1,9 @@
 # 🌊 PortPulse: Autonomous Self-Healing Maritime Intelligence
 
 > **Built for the WeMakeDevs × Bright Data Hackathon: "Into the Scrape-Verse"**  
-> *Transforming fragmented global port data into real-time, resilient maritime intelligence powered by Bright Data Scraper Studio, LangGraph Self-Healing, and 3D Geospatial Visualizations.*
+> *Turning messy, fragmented global port data into real-time, clean maritime intelligence using Bright Data Scraper Studio, an autonomous LangGraph self-healing engine, and an interactive 3D geospatial dashboard.*
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-portpulse--production.up.railway.app-blueviolet?style=for-the-badge&logo=railway)](https://portpulse-production.up.railway.app)
 [![Bright Data](https://img.shields.io/badge/Scraper_Studio-Bright_Data-blue?style=for-the-badge&logo=databricks)](https://brightdata.com)
 [![LangGraph](https://img.shields.io/badge/Self--Healing-LangGraph-orange?style=for-the-badge)](https://langchain.com)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
@@ -10,25 +11,31 @@
 [![Three.js](https://img.shields.io/badge/3D_Globe-Three.js-black?style=for-the-badge&logo=three.js)](https://threejs.org)
 [![Supabase](https://img.shields.io/badge/Database-Supabase_PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 
----
-
-## 🎯 Executive Overview & The Problem
-
-Global maritime logistics is the backbone of international trade, yet port data remains notoriously fragmented. Commercial container ports publish their daily berthing schedules across dynamic Single Page Applications (SPAs), legacy government portals, and unstandardized daily PDF reports. 
-
-When port websites inevitably change their DOM structures or CSS classes, traditional scrapers fail silently — causing expensive blind spots in supply chain tracking.
-
-**PortPulse** solves this with:
-1. **Autonomous Web Scraping**: Driven by custom **Bright Data Scraper Studio Collectors**.
-2. **LangGraph Agentic Self-Healing**: Automatically detects DOM breakage, diagnoses root causes, re-synthesizes extraction prompts, and updates scrapers without human downtime.
-3. **Multimodal PDF Intelligence**: OCR extraction for deep terminal gate passes and marine bulletins.
-4. **Interactive 3D Maritime Command Center**: Real-time berthing manifests, AI situation reports, and an embedded natural-language Maritime Copilot.
+🔗 **Live Deployment:** [https://portpulse-production.up.railway.app](https://portpulse-production.up.railway.app)
 
 ---
 
-## 🏗️ Architecture & Open-Closed Design
+## 💡 The Problem & Why We Built This
 
-PortPulse is engineered strictly adhering to the **Open-Closed Principle (OCP)**: **Open for extension, Closed for modification**.
+Ever tried tracking commercial cargo ships across different global ports? It is honestly chaotic.
+
+Global trade relies completely on maritime shipping, but every major port does whatever it wants with its data. Some use dynamic React/Angular single-page apps, others publish outdated HTML tables, and some literally dump daily berthing manifests into PDFs on obscure government servers. 
+
+To make matters worse, as soon as a port updates their website layout or CSS classes, traditional web scrapers break instantly without anyone noticing until cargo sits delayed.
+
+We built **PortPulse** to fix this entire pipeline from end to end:
+1. **Scrape live port telemetry reliably** using custom **Bright Data Scraper Studio Collectors**.
+2. **Auto-heal broken scrapers** using a **LangGraph agentic state machine** that diagnoses DOM shifts and rewrites extraction prompts without human intervention.
+3. **Parse unstructured PDF gate manifests** using multimodal vision & OCR pipelines.
+4. **Display everything in an interactive 3D Command Center** with live vessel logs, AI situation reports, and an AI maritime copilot.
+
+---
+
+## 🏗️ Architecture & How It Works
+
+We built PortPulse with a strict **Open-Closed Principle (OCP)** architecture — **open for extension, closed for modification**. 
+
+Here is how data flows through the entire system:
 
 ```mermaid
 flowchart TD
@@ -42,18 +49,18 @@ flowchart TD
     end
 
     subgraph PERSISTENCE["3. Ingestion & Command Center"]
-        CHK -->|✅ Passed| SB[("🗄️ Supabase PostgreSQL<br/><code>vessel_logs</code> & <code>port_summaries</code>")]
-        SB --> API["⚡ FastAPI Async Engine<br/><i>(REST Endpoints & MCP Tools)</i>"]
+        CHK -->|✅ Healthy| SB[("🗄️ Supabase PostgreSQL<br/><code>vessel_logs</code> & <code>port_summaries</code>")]
+        SB --> API["⚡ FastAPI Async Engine<br/><i>(REST Endpoints & Dynamic Routing)</i>"]
         API --> UI["🌍 3D Maritime Command Center<br/><i>(React 18 + Three.js + Globe.gl)</i>"]
     end
 
-    subgraph HEALING["4. Autonomous Agentic Recovery"]
-        CHK -->|❌ Failed / Broken DOM| LG["🤖 LangGraph Self-Healing Agent"]
-        LG --> D1["1. DOM & Zero-Record Diagnostics"]
-        D1 --> D2["2. Plain-Language Prompt Synthesis"]
-        D2 --> D3["3. Bright Data API Collector Patching"]
+    subgraph HEALING["4. Autonomous Agentic Self-Healing"]
+        CHK -->|❌ Broken DOM / Zero Records| LG["🤖 LangGraph Self-Healing Agent"]
+        LG --> D1["1. Inspect Failed Payload & Golden Records"]
+        D1 --> D2["2. Plain-Language Prompt Re-Synthesis"]
+        D2 --> D3["3. Patch Collector via Bright Data API"]
         D3 --> D4["4. Retest & Quarantine Approval Gate"]
-        D4 -.->|Auto-Patched Scraper| BD
+        D4 -.->|Patched Scraper Re-run| BD
     end
 
     classDef default fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc;
@@ -67,12 +74,14 @@ flowchart TD
     class LG,D1,D2,D3,D4 healing;
 ```
 
-### ⚡ Why PortPulse is "Closed for Modification & Open for Extension"
+---
 
-Adding monitoring for a brand-new seaport requires **zero modifications** to the core runner, validation engine, database persistence layer, API routers, or frontend dashboard:
+## ⚡ Super Easy to Extend: Add a New Port in 30 Seconds!
+
+Because of our modular port registry, adding a new seaport takes literally **one Python file** without touching the core scraper engine, database code, or frontend UI:
 
 ```python
-# app/ports/my_new_port.py (Adding a new port in < 30 lines)
+# app/ports/rotterdam.py
 from app.ports.base import BasePortScraper, PortMetadata, VesselRecord
 
 class RotterdamScraper(BasePortScraper):
@@ -94,51 +103,53 @@ class RotterdamScraper(BasePortScraper):
 port_registry.register(RotterdamScraper())
 ```
 
-Once registered, the new port is automatically:
-- Scheduled for background telemetry ingestion via APScheduler cron.
-- Enforced with deterministic health scoring and LangGraph self-healing.
-- Available across all REST API endpoints (`/port/rotterdam/vessels`, `/port/rotterdam/summary`).
-- Rendered on the 3D globe and interactive dashboard selector.
+Once you register the scraper:
+- 🕒 APScheduler automatically schedules the cron jobs.
+- 🛡️ Pydantic validates incoming vessel schema & assigns a health score.
+- 🚀 REST endpoints like `/port/rotterdam/vessels` and `/port/rotterdam/summary` go live instantly.
+- 🌐 The port automatically appears on the 3D globe and frontend selector with full telemetry!
 
 ---
 
-## 🛰️ Live Bright Data Scraper Studio Collectors
+## 🛰️ Active Bright Data Scraper Studio Collectors
 
-PortPulse actively collects live maritime telemetry using custom collectors created and verified on **Bright Data Scraper Studio**:
+We built and verified custom scrapers in **Bright Data Scraper Studio** to extract live shipping manifests:
 
 | Port Name | UN/LOCODE | Region | Bright Data Collector ID | Target Portal |
 |---|---|---|---|---|
-| **JNPA (Nhava Sheva)** | `INNSA` | India (Maharashtra) | `c_mszumjcx12i1k1ydb8` | JNPA Berthing Portal |
+| **JNPA (Nhava Sheva)** | `INNSA` | India (Maharashtra) | `c_mszumjcx12i1k1ydb8` | JNPA Live Berthing Portal |
 | **Mundra Port** | `INMUN` | India (Gujarat) | `c_mt03ofjt15cu3ojzx6` | APSEZ Schedule Hub |
-| **Port of Felixstowe** | `GBFXT` | United Kingdom (Suffolk) | `c_mt60nosg1yqb8hzqks` | Ocean Live Shipping |
+| **Port of Felixstowe** | `GBFXT` | United Kingdom (Suffolk) | `c_mt60nosg1yqb8hzqks` | Ocean Live Shipping Marine Portal |
 
 ---
 
-## 🔄 Autonomous Self-Healing Workflow
+## 🤖 The Autonomous Self-Healing Magic
 
-When a target website updates its DOM or changes table structures:
+What happens when a port changes its webpage layout?
 
-1. **Deterministic Quality Gate**: Every scrape batch is validated against `StrictVesselRecord` Pydantic models. Critical fields (`vessel_name`, `terminal_name`, `berth_number`) produce a mathematical **Health Score (0–100%)**.
-2. **Threshold Trigger**: If health falls below **80.0%** or zero records are returned, the execution is automatically routed to the **LangGraph Self-Healing State Machine**.
-3. **Diagnostic Analysis**: The agent inspects the broken payload against historical "Golden Records" to pinpoint broken CSS selectors or dynamic layout shifts.
-4. **Prompt Synthesis & Regeneration**: LangGraph generates an exact remediation prompt and uses the **Bright Data API** to re-detect selectors and patch the collector code.
-5. **Retest & Quarantine Isolation**: The patched scraper is verified against live endpoints. If health recovers to $\ge 80\%$, it is approved to production; otherwise, it is safely quarantined with an audit event recorded in Supabase.
-
----
-
-## 🖥️ 3D Maritime Command Center (Dashboard)
-
-The frontend provides an operations-grade command center:
-
-- 🌍 **Interactive 3D Geospatial Earth**: Built with Three.js & Globe.gl displaying real-time commercial port beacons, coordinates, and operational statuses.
-- 🚢 **Live Fleet Telemetry Manifest**: Filter vessels by operational status: *At Berth*, *Anchorage*, and *Expected Inbound*, with real-time search across vessel names, LOA, and cargo types.
-- 📑 **Multimodal PDF OCR Intelligence**: Extracts vessel movements and gate passes from official port authority PDF bulletins using OCR and vision pipelines.
-- 📊 **AI Port Situation Reports**: Generates automated executive situation reports synthesizing terminal congestion, throughput bottlenecks, and turnaround forecasts.
-- 🤖 **PortPulse Copilot (RAG Chat)**: Natural language conversational assistant grounded directly in live Supabase telemetry to answer complex supply chain inquiries (e.g., *"Which container vessels are berthed at Felixstowe Berths 8&9?"*).
+1. **Quality Check**: Every scrape gets validated against strict Pydantic rules. We calculate an exact **Health Score (0–100%)** based on required fields (`vessel_name`, `terminal_name`, `berth_number`, timestamps).
+2. **Auto-Trigger**: If the health score drops below **80%** or returns zero records, the scraper is flagged and handed over to our **LangGraph Agent**.
+3. **Diagnosis**: LangGraph compares the broken output against historical "Golden Records" to figure out which CSS selectors or table layouts changed.
+4. **Prompt Synthesis & Patch**: The agent generates an updated extraction prompt and patches the scraper via the **Bright Data API**.
+5. **Retest & Deploy**: If the patched collector recovers above 80% health on retest, it gets automatically promoted back to production. Otherwise, it safely isolates into quarantine with an audit log in Supabase.
 
 ---
 
-## 📋 Example Structured JSON Output
+## 🖥️ The Dashboard: 3D Maritime Command Center
+
+We wanted the UI to look and feel like a modern aerospace/maritime operations center:
+
+- 🌍 **Interactive 3D Globe**: Rendered in Three.js and Globe.gl showing real-time port coordinates, beacon pulses, and active vessel counts.
+- 🚢 **Live Vessel Manifest**: Search and filter ships by *At Berth*, *Anchorage*, and *Expected Arrival*, complete with LOA, Gross Tonnage, and agent details.
+- 📑 **Multimodal PDF Agent**: Extracts structured logs directly from official port authority PDF bulletins and daily reports.
+- 📊 **AI Situation Reports**: Synthesizes terminal congestion, estimated turnaround delays, and berthing density using LLM reasoning.
+- 💬 **PortPulse Copilot (RAG Chat)**: A smart maritime chatbot grounded in live Supabase telemetry to answer operational queries (e.g. *"What container vessels are currently docked at Felixstowe Berths 8&9?"*).
+
+---
+
+## 📦 Sample Structured Output (JSON)
+
+Here is what our normalized pipeline produces from messy port websites:
 
 ```json
 [
@@ -159,45 +170,23 @@ The frontend provides an operations-grade command center:
       "next_port": "Zeebrugge",
       "ships_agent": "OOCL"
     }
-  },
-  {
-    "vessel_name": "MSC CARMELITA",
-    "terminal_name": "Trinity",
-    "berth_number": "Trinity",
-    "via_number": null,
-    "commodity": "Containers (TEU)",
-    "berthed_at": "2026-08-20T09:25:00Z",
-    "expected_completion_at": "2026-08-24T00:00:00Z",
-    "terminal_report_pdf_url": "https://www.portoffelixstowe.co.uk/company-information/marine/",
-    "raw_payload": {
-      "nationality": "Liberia",
-      "gross_tonnage": "155,492",
-      "overall_length": "366m",
-      "last_port": "Bremerhaven",
-      "next_port": "Antwerp",
-      "ships_agent": "MSC UK"
-    }
   }
 ]
 ```
 
 ---
 
-## 💻 Tech Stack
+## 🛠️ Tech Stack
 
-- **Web Scraping & Proxy**: [Bright Data Scraper Studio](https://brightdata.com), Bright Data CLI (`bdata`), Web Unlocker
-- **Agentic AI & Self-Healing**: [LangGraph](https://github.com/langchain-ai/langgraph), [LangChain](https://github.com/langchain-ai/langchain), OpenAI GPT-4o, Pydantic v2
-- **Backend API & Data Engine**: FastAPI, Supabase (PostgreSQL), APScheduler, HTTPX, PyPDF
-- **Frontend Dashboard**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Three.js, Globe.gl, Framer Motion, Zustand
+- **Scraping & Data Extraction**: [Bright Data Scraper Studio](https://brightdata.com), Bright Data CLI (`bdata`), Web Unlocker
+- **Agentic AI & Healing**: [LangGraph](https://github.com/langchain-ai/langgraph), [LangChain](https://github.com/langchain-ai/langchain), OpenAI GPT-4o, Pydantic v2
+- **Backend**: FastAPI, Astral `uv`, Supabase (PostgreSQL), APScheduler, HTTPX, PyPDF
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Three.js, Globe.gl, Lucide Icons, Framer Motion, Zustand
+- **Deployment**: Railway (Multi-stage Docker with `uv` + Node builder)
 
 ---
 
-## 🚀 Quick Start Guide
-
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- [Bright Data CLI](https://brightdata.com) (`bdata`) logged into your Bright Data account
+## 🚀 Running Locally
 
 ### 1. Backend Setup
 ```bash
@@ -205,36 +194,36 @@ The frontend provides an operations-grade command center:
 git clone https://github.com/poojan-solanki/PortPulse.git
 cd PortPulse
 
-# Install Python dependencies
+# Install dependencies using Astral uv (or pip)
 uv sync # or pip install -r requirements.txt
 
-# Configure environment variables (.env)
+# Create your .env file
 SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_anon_or_service_key
-OPENAI_API_KEY=your_openai_api_key
+SUPABASE_KEY=your_supabase_anon_key
+OPENAI_API_KEY=your_openai_key
 BRIGHTDATA_API_TOKEN=your_brightdata_token
 
-# Run the FastAPI server & scraper engine
+# Start FastAPI server & cron engine
 python main.py
 ```
-*Backend runs locally at `http://localhost:8000` with Swagger docs at `http://localhost:8000/docs`.*
+*Backend runs locally at `http://localhost:8000` (Swagger docs at `http://localhost:8000/docs`).*
 
 ### 2. Frontend Setup
 ```bash
 cd frontend
-
-# Install dependencies and start development server
 npm install
 npm run dev
 ```
-*Frontend runs locally at `http://localhost:5173` (or integrated at `http://localhost:8000`).*
+*Frontend runs locally at `http://localhost:5173`.*
 
 ---
 
 ## 🏆 Hackathon Tracks Targeted
 
-- 🥇 **Web-Slinger Track (Grand Prize)**: Deep integration with Bright Data Scraper Studio custom collectors, CLI triggering, and autonomous self-healing recovery.
-- 🎨 **Suit-Up Track (Best UI)**: Immersive 3D geospatial globe, live telemetry filters, AI situation reports, and responsive glassmorphism UI.
-- 🧠 **Spider-Sense Track (Best Clean Code)**: Production-grade SOLID design, strict Pydantic validation contracts, modular port registry, and clean TypeScript state management.
+- 🥇 **Web-Slinger Track (Grand Prize)**: Deep integration of Bright Data Scraper Studio collectors, autonomous LangGraph self-healing, and end-to-end maritime intelligence pipeline.
+- 🎨 **Suit-Up Track (Best UI)**: Sleek, responsive dark-mode command center featuring an interactive 3D Three.js globe, glassmorphic styling, and AI situation insights.
+- 🧠 **Spider-Sense Track (Best Clean Code)**: Open-Closed SOLID architecture, modular port registry pattern, strict Pydantic validation contracts, and clean TypeScript state management.
 
 ---
+
+⭐ **Built with passion for the WeMakeDevs × Bright Data Hackathon!**
