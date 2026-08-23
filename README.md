@@ -117,15 +117,15 @@ Bright Data Scraper Studio collectors extracting live manifests:
 
 ---
 
-## 🤖 The Autonomous Self-Healing Magic
+## 🤖 Autonomous Self-Healing Pipeline
 
-What happens when a port changes its webpage layout?
+When a port website updates its DOM or table layout:
 
-1. **Quality Check**: Every scrape gets validated against strict Pydantic rules. We calculate an exact **Health Score (0–100%)** based on required fields (`vessel_name`, `terminal_name`, `berth_number`, timestamps).
-2. **Auto-Trigger**: If the health score drops below **80%** or returns zero records, the scraper is flagged and handed over to our **LangGraph Agent**.
-3. **Diagnosis**: LangGraph compares the broken output against historical "Golden Records" to figure out which CSS selectors or table layouts changed.
-4. **Prompt Synthesis & Patch**: The agent generates an updated extraction prompt and patches the scraper via the **Bright Data API**.
-5. **Retest & Deploy**: If the patched collector recovers above 80% health on retest, it gets automatically promoted back to production. Otherwise, it safely isolates into quarantine with an audit log in Supabase.
+1. **Validation Gate (`app/health/contracts.py`)**: Incoming records are checked against `StrictVesselRecord` Pydantic rules. If the health score drops below **80%** or returns zero records, the healing pipeline is triggered.
+2. **Diagnosis (`node_diagnose`)**: LangGraph pulls historical "golden records" from Supabase to identify missing fields or layout shifts.
+3. **Prompt Synthesis (`node_synthesize_prompt`)**: An LLM analyzes the broken output against the expected schema and synthesizes an updated extraction prompt.
+4. **Patch Collector (`node_patch_collector`)**: Updates the collector definition via the **Bright Data API** / `bdata` CLI.
+5. **Retest & Quarantine (`node_retest_and_gate`)**: Re-runs the collector against the live site. If health recovers $\ge 80\%$, the scraper is restored to `active`; otherwise, it is moved to `quarantined` to prevent bad data ingestion.
 
 ---
 
