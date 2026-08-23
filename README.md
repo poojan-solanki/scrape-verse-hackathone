@@ -129,6 +129,47 @@ When a port website updates its DOM or table layout:
 
 ---
 
+## 📈 Scalability & Adding New Ports
+
+### How the System Scales
+- **Thread Pool Workers**: APScheduler manages scraper executions via an async worker pool (`ThreadPoolExecutor`) with concurrency locks so scraping multiple ports never blocks the API.
+- **Offloaded Scraping**: Scrapers run on Bright Data's cloud collectors, so running 5 or 50 ports puts zero proxy or CPU overhead on the server.
+- **Dynamic API Routing**: REST endpoints (`/api/port/<id>/vessels`, `/api/port/<id>/summary`) are generated at runtime for every registered port.
+
+### How to Add a New Port (In Reality)
+Adding a new port requires 3 steps without touching the core engine, database tables, or frontend:
+
+1. **Create Collector**: In Bright Data Scraper Studio, generate a collector for the port's shipping schedule URL.
+2. **Add Port Class (`app/ports/<port_name>.py`)**:
+   ```python
+   from app.ports.base import BasePortScraper, PortMetadata, VesselRecord
+
+   class SingaporeScraper(BasePortScraper):
+       @property
+       def metadata(self) -> PortMetadata:
+           return PortMetadata(
+               port_id="sg_singapore",
+               name="Port of Singapore",
+               unlocode="SGSIN",
+               collector_id="c_your_collector_id",
+               target_url="https://www.singaporepsa.com/schedule",
+               schedule_cron="*/30 * * * *"
+           )
+
+       def parse_raw_data(self, raw_items):
+           return [VesselRecord(...) for item in raw_items]
+   ```
+3. **Register in `app/ports/registry.py`**:
+   ```python
+   port_registry.register(SingaporeScraper())
+   ```
+
+**What happens automatically:**
+- The background scheduler starts scraping on the defined cron.
+- The 3D globe immediately adds the new port pin and loads its live metrics.
+- Pydantic validation, health scoring, and self-healing apply to its data immediately.
+
+---
 
 ## 🚀 Running Locally
 
